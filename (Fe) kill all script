@@ -1,0 +1,58 @@
+-- RemoteEvent setup
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local KillAllPlayersEvent = Instance.new("RemoteEvent")
+KillAllPlayersEvent.Name = "KillAllPlayersEvent"
+KillAllPlayersEvent.Parent = ReplicatedStorage
+
+-- Function to kill a player's character
+local function killPlayer(player)
+    local character = player.Character
+    if character then
+        -- Hide the player's character to simulate death
+        character:Destroy()
+    end
+end
+
+-- Server-side handler for when the event is fired from clients
+KillAllPlayersEvent.OnServerEvent:Connect(function(player)
+    -- Check if player is authorized to execute this action (optional)
+    -- Implement your own authorization logic here
+
+    -- Loop through all players and kill them
+    for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
+        if otherPlayer ~= player then
+            killPlayer(otherPlayer)
+        end
+    end
+
+    -- Notify all clients that everyone has been killed
+    KillAllPlayersEvent:FireAllClients()
+end)
+
+-- Client-side script (runs on each client)
+local player = game.Players.LocalPlayer
+
+-- Function to handle when all players are killed (Client-side)
+local function handleAllPlayersKilled()
+    -- Display a message or handle visual feedback
+    local messageGui = Instance.new("Message")
+    messageGui.Text = "Everyone has been killed!"
+    messageGui.Parent = player.PlayerGui
+    wait(5)  -- Display message for 5 seconds
+    messageGui:Destroy()
+end
+
+-- Connect the client to the server-side event
+KillAllPlayersEvent.OnClientEvent:Connect(handleAllPlayersKilled)
+
+-- Example: Bind to a GUI button click or any client-side trigger
+-- Replace with your own client-side trigger logic
+local function onChatted(message)
+    if message:lower() == "!killallplayers" then
+        -- Call the server to execute the action
+        KillAllPlayersEvent:FireServer(player)
+    end
+end
+
+-- Connect the onChatted function to the Chatted event
+player.Chatted:Connect(onChatted)
