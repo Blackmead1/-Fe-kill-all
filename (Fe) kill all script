@@ -8,8 +8,11 @@ KillAllPlayersEvent.Parent = ReplicatedStorage
 local function killPlayer(player)
     local character = player.Character
     if character then
-        -- Hide the player's character to simulate death
-        character:Destroy()
+        -- Destroy the character's humanoid to simulate death
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.Health = 0
+        end
     end
 end
 
@@ -18,7 +21,7 @@ KillAllPlayersEvent.OnServerEvent:Connect(function(player)
     -- Check if player is authorized to execute this action (optional)
     -- Implement your own authorization logic here
 
-    -- Loop through all players and kill them
+    -- Loop through all players except the player who initiated the action
     for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
         if otherPlayer ~= player then
             killPlayer(otherPlayer)
